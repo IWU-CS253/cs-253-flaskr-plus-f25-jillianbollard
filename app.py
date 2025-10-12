@@ -67,16 +67,44 @@ def close_db(error):
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select title, text from entries order by id desc')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
+    selected_category = request.args.get('category')
 
+    if selected_category:
+        cur = db.execute(
+            'SELECT id, title, text, category FROM entries WHERE category = ? ORDER BY id DESC',
+            [selected_category]
+        )
+    else:
+        cur = db.execute('SELECT id, title, text, category FROM entries ORDER BY id DESC')
+
+
+    entries = cur.fetchall()
+
+    cat_cur = db.execute('SELECT DISTINCT category FROM entries WHERE category IS NOT NULL')
+    categories = [row['category'] for row in cat_cur.fetchall()]
+
+    return render_template(
+        'show_entries.html',
+        entries=entries,
+        categories=categories,
+        selected_category=selected_category
+    )
 
 @app.route('/add', methods=['POST'])
 def add_entry():
     db = get_db()
-    db.execute('insert into entries (title, text) values (?, ?)',
-               [request.form['title'], request.form['text']])
+    db.execute('insert into entries (title, text, category) values (?, ?, ?)',
+               [request.form['title'], request.form['text'], request.form['category']])
     db.commit()
     flash('New entry was successfully posted')
+    return redirect(url_for('show_entries'))
+
+
+# add ability to delete posts in the common media area
+@app.route('/delete/<int:id>', methods=['POST'])
+def delete_entry(id):
+    db = get_db()
+    db.execute('DELETE FROM entries WHERE id = ?', [id])
+    db.commit()
+    flash('Entry deleted successfully')
     return redirect(url_for('show_entries'))
