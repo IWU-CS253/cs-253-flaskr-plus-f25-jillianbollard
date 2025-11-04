@@ -93,7 +93,7 @@ def show_entries():
 @app.route('/add', methods=['POST'])
 def add_entry():
     db = get_db()
-    db.execute('insert into entries (title, text, category) values (?, ?, ?)',
+    db.execute('INSERT INTO entries (title, text, category) values (?, ?, ?)',
                [request.form['title'], request.form['text'], request.form['category']])
     db.commit()
     flash('New entry was successfully posted')
@@ -108,3 +108,13 @@ def delete_entry(id):
     db.commit()
     flash('Entry deleted successfully')
     return redirect(url_for('show_entries'))
+
+@app.route('/edit/<int:id>', methods=['GET'])
+def edit_entry(id):
+        db = get_db()
+        post = db.execute('UPDATE entries SET (title, text, category) WHERE id = ?',
+                          [request.form['title'], request.form['text'], request.form['category'], [id]]).fetchone()
+        db.commit()
+        flash('Entry successfully updated!')
+        return redirect(url_for('show_entries'))
+        # return render_template('show_entries.html', post=post)
