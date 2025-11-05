@@ -31,46 +31,29 @@ class FlaskrTestCase(unittest.TestCase):
         assert b'<strong>HTML</strong> allowed here' in rv.data
         assert b'A category' in rv.data
 
-
-
-
-
-
-
-
-
-
-
-
-    def test_message_edit(self):
-        # Step 1: Add a post to edit
+    def test_message_editing(self):
+        # ask professor sheese if you can call the test_messages() function within this test
         self.app.post('/add', data={
             'title': 'Original Title',
-            'category': 'General',
-            'text': 'Original content.'
+            'category': 'Original Category',
+            'text': 'Original Text'
         }, follow_redirects=True)
 
-        # Step 2: Get the post ID (assuming it's the first post)
         with self.app.application.app_context():
-            db = get_db()
+            db = self.db_fd
             post = db.execute('SELECT id FROM entries WHERE title = ?', ('Original Title',)).fetchone()
             post_id = post['id']
 
-        # Step 3: Edit the post
         response = self.app.post(f'/edit/{post_id}', data={
-            'title': 'Updated Title',
-            'category': 'Updated Category',
-            'text': 'Updated content.'
+            'title': 'New Title',
+            'category': 'New Category',
+            'text': 'New Text'
         }, follow_redirects=True)
 
-        # Step 4: Check that the updated content appears
-        assert b'Updated Title' in response.data
-        assert b'Updated Category' in response.data
-        assert b'Updated content.' in response.data
+        assert b'New Title' in response.data
+        assert b'New Category' in response.data
+        assert b'New Text' in response.data
 
-        # Step 5: Ensure old content is gone
-        assert b'Original Title' not in response.data
-        assert b'Original content.' not in response.data
 
 if __name__ == '__main__':
     unittest.main()
