@@ -113,12 +113,14 @@ def delete_entry(id):
 def edit_entry(id):
     db = get_db()
     if request.method == 'POST':
+        # if the user has already updated the information, then use the post style to finish and update the database with the new post information
         db.execute('UPDATE entries SET title = ?, text = ?, category = ? WHERE id = ?',
             [request.form['title'], request.form['text'], request.form['category'], id])
         db.commit()
         flash('Entry successfully edited!')
         return redirect(url_for('show_entries'))
     else:
+        # fetch all the current information in the post so the user can edit it
         current_val = db.execute('SELECT id, title, text, category FROM entries WHERE id = ?', [id])
         entry = current_val.fetchone()
         return render_template('edit_entries.html', entry=entry)
