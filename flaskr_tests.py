@@ -3,6 +3,9 @@ import app as flaskr
 import unittest
 import tempfile
 
+from app import get_db
+
+
 class FlaskrTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -40,7 +43,7 @@ class FlaskrTestCase(unittest.TestCase):
         }, follow_redirects=True)
 
         with self.app.application.app_context():
-            db = self.db_fd
+            db = get_db()
             post = db.execute('SELECT id FROM entries WHERE title = ?', ('Original Title',)).fetchone()
             post_id = post['id']
 
